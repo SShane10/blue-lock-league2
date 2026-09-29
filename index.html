@@ -112,12 +112,14 @@ table{width:100%;border-collapse:collapse;background:#101827;border-radius:12px;
 // =====================
 // Buraya Supabase Project URL ve ANON/PUBLISHABLE KEY gir.
 // Service Role Key'i ASLA buraya koyma.
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://zkdmyznwyiawlnqsxmkh.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zpelkpoiRBunQeu1_ltd6A_RUdgAfBt";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InprZG15em53eWlhd2xucXN4bWtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODg0NzAsImV4cCI6MjEwNjI2NDQ3MH0.My_3tJonRcgGIyv4Oz0P__Mf9a0k96Rr7X3wFxtcAmA";
+const SUPABASE_CLIENT_KEY = SUPABASE_PUBLISHABLE_KEY || SUPABASE_ANON_KEY;
 
 const PRICE={goal:700000,assist:600000,match_up:100000,critical_intervention:500000};
-const configured=SUPABASE_URL.startsWith("https://")&&!SUPABASE_URL.includes("YOUR_")&&!SUPABASE_ANON_KEY.includes("YOUR_");
-const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+const configured=SUPABASE_URL.startsWith("https://")&&!SUPABASE_URL.includes("YOUR_")&&!!SUPABASE_CLIENT_KEY;
+const sb=configured?supabase.createClient(SUPABASE_URL,SUPABASE_CLIENT_KEY):null;
 
 let state={teams:[],players:[],matches:[],events:[]};
 let currentUser=null,currentRole=null;
