@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blue Lock League</title>
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+:root{
+  --bg:#0a1128;--sidebar:#101729;--panel:#101827;--panel2:#111c30;
+  --line:#26334b;--muted:#8492a9;--text:#f7f9fc;--blue:#2563eb;
+  --blue2:#60a5fa;--purple:#a855f7;--green:#22c55e;--gold:#fbbf24;--red:#dc2626;
+}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);background-color:var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 0%,rgba(37,99,235,.12),transparent 38%),
+    radial-gradient(circle at 85% 18%,rgba(168,85,247,.08),transparent 42%),
+    repeating-radial-gradient(circle at 20% 15%,transparent 0,transparent 60px,rgba(96,165,250,.035) 61px,rgba(96,165,250,.035) 62px),
+    linear-gradient(180deg,#0a1128,#0d1530 50%,#0a1128);
+  background-attachment:fixed;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{
+  position:fixed;left:0;top:0;width:270px;height:100vh;overflow-y:auto;
+  padding:24px 15px;background:linear-gradient(180deg,#12182c,#0b101b);
+  border-right:1px solid #26314a;box-shadow:4px 0 25px rgba(0,0,0,.35);z-index:20
+}
+.logo{text-align:center;font-weight:900;font-size:25px;margin:2px 0 6px;background:linear-gradient(90deg,var(--blue2),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.league{text-align:center;color:#4a8dff;font-weight:800;font-size:12px;letter-spacing:1.4px;margin-bottom:28px}
+.navBtn{
+  width:100%;border:0;border-radius:8px;padding:13px 14px;margin-bottom:8px;text-align:left;
+  color:#f8fafc;background:#171f31;transition:.18s;font-size:14px
+}
+.navBtn:hover{background:#20345d;transform:translateX(3px)}
+.navBtn.active{background:linear-gradient(90deg,#1d4ed8,#3b82f6);box-shadow:0 0 0 2px #60a5fa inset,0 0 18px rgba(59,130,246,.32)}
+.adminNav{background:#351515;border:1px solid #6f1d1d}
+.content{margin-left:270px;width:calc(100% - 270px);padding:25px}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;background:linear-gradient(135deg,#101625,#141c30);
+  border:1px solid #263149;border-radius:13px;padding:18px 20px;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,.2)
+}
+.topbar h2{margin:0}.mode{color:#9aa8bd;font-size:13px}.badge{display:inline-block;margin-left:7px;padding:5px 9px;border-radius:20px;font-size:11px;background:#334155}.badge.admin{background:#b91c1c}
+.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.box,.panel,.teamCard,.fmCard,.forumList{
+  background:linear-gradient(160deg,#111827,#0d1422);border:1px solid var(--line);border-radius:15px;
+  box-shadow:0 10px 26px rgba(0,0,0,.18)
+}
+.box{padding:22px;transition:.18s}.box:hover{transform:translateY(-3px);border-color:#37517a}
+.box h3{color:#94a3b8;margin:0 0 8px;font-size:14px}.box p{font-size:32px;font-weight:800;margin:0;background:linear-gradient(90deg,#60a5fa,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rankGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:17px;margin-top:18px}
+.panel{padding:20px;margin-bottom:18px}.panel h3{margin:0 0 14px}
+.rankRow{display:flex;align-items:center;gap:11px;padding:10px 12px;background:#0c1320;border:1px solid #1f2a3e;border-radius:10px;margin-bottom:7px;cursor:pointer}
+.rankRow:hover{border-color:#2563eb;transform:translateX(2px)}
+.rankNum{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#1e293b;font-size:11px;font-weight:800}
+.rankRow:nth-child(2) .rankNum{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#171100}
+.rankRow:nth-child(3) .rankNum{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#171100}
+.rankRow:nth-child(4) .rankNum{background:linear-gradient(135deg,#d97706,#92400e)}
+.rankMain{flex:1}.rankMain strong{display:block;font-size:13px}.rankMain small{color:#728096}.rankVal{font-weight:800;color:#60a5fa;font-size:13px}
+.forumList{overflow:hidden}
+.forumHeader,.forumRow{display:grid;grid-template-columns:58px 1.8fr 1fr 1.3fr .9fr .65fr .65fr .8fr;gap:12px;align-items:center;padding:12px 15px}
+.forumHeader{font-size:10px;color:#718096;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--line)}
+.forumRow{border-bottom:1px solid #1e293b;cursor:pointer;transition:.15s}
+.forumRow:last-child{border-bottom:0}.forumRow:hover{background:#171f31;transform:translateX(2px)}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#1e3a8a,#7c3aed);font-weight:900;border:2px solid #3b82f6}
+.name{font-weight:800}.sub{color:#718096;font-size:11px}.rating{font-size:16px;font-weight:900;color:#60a5fa}.value{color:#22c55e;font-weight:800}
+.teamGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.teamCard{padding:20px;text-align:center;cursor:pointer;transition:.18s}.teamCard:hover{border-color:#2563eb;transform:translateY(-4px);box-shadow:0 10px 27px rgba(37,99,235,.18)}
+.teamLogo{width:72px;height:72px;border-radius:18px;margin:0 auto 10px;display:grid;place-items:center;background:#17233b;color:#60a5fa;font-size:28px;font-weight:900;border:1px solid #2b4268}
+.teamCard h3{margin:6px 0}.teamMini{display:flex;justify-content:center;gap:14px;color:#8391a7;font-size:12px}
+table{width:100%;border-collapse:collapse;background:#101827;border-radius:12px;overflow:hidden}
+th{background:#1e293b;color:#cbd5e1}td,th{padding:13px;border-bottom:1px solid #273449;text-align:left;font-size:13px}
+tr:hover td{background:#141f32}.leagueTable tbody tr:first-child td{background:rgba(37,99,235,.11)}
+.matchCard{padding:16px;border:1px solid #273449;border-radius:12px;background:#0d1422;margin-bottom:10px;cursor:pointer}
+.matchCard:hover{border-color:#2563eb}.matchMeta{font-size:11px;color:#718096;margin-bottom:10px}
+.matchScore{display:grid;grid-template-columns:1fr auto 1fr;gap:15px;align-items:center;text-align:center}.matchScore .home{text-align:right}.matchScore .away{text-align:left}.score{font-weight:900;font-size:22px;color:#fff}
+.eventTags{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid #202b3e}.tag{font-size:10px;padding:5px 8px;border-radius:20px;background:#1e293b;color:#93c5fd}
+.fmCard{padding:24px}.fmHeader{display:flex;gap:22px;align-items:center;flex-wrap:wrap}.fmPhoto{width:145px;height:145px;border-radius:15px;display:grid;place-items:center;font-size:42px;font-weight:900;background:linear-gradient(145deg,#172554,#4c1d95);border:3px solid #2563eb;box-shadow:0 0 22px rgba(37,99,235,.32)}
+.fmInfo{flex:1}.fmInfo h2{font-size:29px;margin:0}.fmInfo h3{color:#60a5fa;margin:5px 0;font-weight:500}.fmMeta{color:#94a3b8;font-size:13px}
+.performance{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.performance span{background:#1e293b;padding:9px 13px;border-radius:9px;font-size:13px}
+.marketBig{text-align:right}.marketBig small{display:block;color:#718096}.marketBig strong{display:block;color:#22c55e;font-size:25px;margin-top:5px}
+.formGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 16px}
+label{display:block;color:#94a3b8;font-size:12px;margin-top:12px}
+input,select,textarea{width:100%;padding:11px 12px;margin:7px 0;background:#0f1725;color:#fff;border:1px solid #36445d;border-radius:8px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#3b82f6}textarea{min-height:95px;resize:vertical}
+.btn{border:0;border-radius:8px;padding:11px 16px;margin-top:10px;margin-right:7px;color:#fff;background:linear-gradient(135deg,#2563eb,#3b82f6);transition:.15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 17px rgba(37,99,235,.28)}.btn.danger{background:linear-gradient(135deg,#b91c1c,#ef4444)}.btn.ghost{background:#1e293b}.btn.small{padding:6px 9px;font-size:11px;margin-top:0}
+.note{color:#6f7d93;font-size:12px;line-height:1.6}.backBtn{background:#1e293b;color:#fff;border:0;padding:9px 14px;border-radius:8px;margin-bottom:15px}
+.adminLogin{max-width:360px}.adminRows{display:grid;gap:8px}.adminRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;background:#0c1320;border:1px solid #202b3e;border-radius:9px;font-size:12px}
+.adminRow small{color:#75839a}.dangerText{color:#fb7185}.successText{color:#4ade80}
+.notice{background:#2b210d;border:1px solid #6e551b;color:#d9c170;padding:11px;border-radius:8px;font-size:11px;line-height:1.5;margin-bottom:12px}
+.searchBar{display:flex;gap:10px;margin-bottom:14px}.searchBar input{max-width:420px}
+@media(max-width:900px){
+ .sidebar{width:82px;padding:20px 8px}.logo{font-size:0}.logo:after{content:"⚽";font-size:28px}.league,.navBtn .lbl{display:none}.navBtn{text-align:center;font-size:18px;padding:13px 6px}
+ .content{margin-left:82px;width:calc(100% - 82px);padding:16px}.forumHeader,.forumRow{grid-template-columns:50px 1.7fr .9fr .7fr .7fr}.hideTablet{display:none}
+ .fmHeader{align-items:flex-start}.marketBig{text-align:left;width:100%}
+}
+@media(max-width:620px){
+ .topbar{align-items:flex-start;flex-direction:column}.cards{grid-template-columns:1fr 1fr}.rankGrid{grid-template-columns:1fr}.forumHeader{display:none}.forumRow{grid-template-columns:48px 1fr auto}.forumRow .mobileHide{display:none}
+ .matchScore{grid-template-columns:1fr}.matchScore .home,.matchScore .away{text-align:center}.fmPhoto{width:100px;height:100px}.cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="logo">⚽ BlueLock</div>
+  <div class="league">EGOIST LEAGUE</div>
+  <button class="navBtn active" data-page="dashboard">🏠 <span class="lbl">Ana Sayfa</span></button>
+  <button class="navBtn" data-page="players">👤 <span class="lbl">Oyuncular</span></button>
+  <button class="navBtn" data-page="teams">🏆 <span class="lbl">Takımlar</span></button>
+  <button class="navBtn" data-page="league">📊 <span class="lbl">Lig</span></button>
+  <button class="navBtn" data-page="matches">📅 <span class="lbl">Maç Sonuçları</span></button>
+  <button class="navBtn" data-page="goals">👑 <span class="lbl">Gol Krallığı</span></button>
+  <button class="navBtn" data-page="assists">🎯 <span class="lbl">Asist Krallığı</span></button>
+  <button class="navBtn" data-page="matchups">⚔️ <span class="lbl">Match Up</span></button>
+  <button class="navBtn" data-page="critical">🛡️ <span class="lbl">Kritik Müdahale</span></button>
+  <button class="navBtn" data-page="market">💰 <span class="lbl">Piyasa Değeri</span></button>
+  <button class="navBtn adminNav" data-page="admin">🔐 <span class="lbl">Admin Paneli</span></button>
+</aside>
+
+<main class="content">
+  <div class="topbar">
+    <h2 id="pageTitle">Ana Sayfa</h2>
+    <div class="mode">Mod: <span id="modeText">Ziyaretçi</span><span id="modeBadge" class="badge">Ziyaretçi</span></div>
+  </div>
+
+  <section id="page-dashboard" class="page active">
+    <div class="cards" id="dashboardCards"></div>
+    <div class="rankGrid">
+      <div class="panel"><h3>📅 Son Maçlar</h3><div id="recentMatches"></div></div>
+      <div class="panel"><h3>👑 Gol Krallığı</h3><div id="dashGoals"></div></div>
+      <div class="panel"><h3>🎯 Asist Krallığı</h3><div id="dashAssists"></div></div>
+      <div class="panel"><h3>💰 Piyasa Değeri</h3><div id="dashMarket"></div></div>
+    </div>
+  </section>
+
+  <section id="page-players" class="page">
+    <h2>👤 Oyuncular</h2><p class="note">Bir oyuncuya tıklayarak profilini aç.</p>
+    <div class="searchBar"><input id="playerSearch" placeholder="Oyuncu ara..."><select id="playerTeamFilter"><option value="">Tüm Takımlar</option></select></div>
+    <div class="forumList">
+      <div class="forumHeader"><span></span><span>İsim</span><span>Mevki</span><span>Takım</span><span>Değer</span><span>⚽ Gol</span><span>🅰 Asist</span><span>⚔️ MU</span></div>
+      <div id="playersList"></div>
+    </div>
+  </section>
+
+  <section id="page-profile" class="page"><button class="backBtn" onclick="showPage('players')">← Oyunculara Dön</button><div id="profileArea"></div></section>
+
+  <section id="page-teams" class="page"><h2>🏆 Takımlar</h2><div class="teamGrid" id="teamsList"></div></section>
+
+  <section id="page-teamDetail" class="page"><button class="backBtn" onclick="showPage('teams')">← Takımlara Dön</button><div id="teamDetail"></div></section>
+
+  <section id="page-league" class="page"><h2>📊 Lig Tablosu</h2><div class="panel" style="overflow:auto"><table class="leagueTable"><thead><tr><th>#</th><th>Takım</th><th>O</th><th>G</th><th>B</th><th>M</th><th>AG</th><th>YG</th><th>AV</th><th>P</th></tr></thead><tbody id="leagueBody"></tbody></table></div></section>
+
+  <section id="page-matches" class="page"><h2>📅 Maç Sonuçları</h2><p class="note">Oynanan tüm maçlar ve kayıtlı olaylar.</p><div id="matchesList"></div></section>
+
+  <section id="page-matchDetail" class="page"><button class="backBtn" onclick="showPage('matches')">← Maçlara Dön</button><div id="matchDetail"></div></section>
+
+  <section id="page-goals" class="page"><h2>👑 Gol Krallığı</h2><div id="goalsRanking" class="panel"></div></section>
+  <section id="page-assists" class="page"><h2>🎯 Asist Krallığı</h2><div id="assistsRanking" class="panel"></div></section>
+  <section id="page-matchups" class="page"><h2>⚔️ Match Up Sıralaması</h2><div id="matchupsRanking" class="panel"></div></section>
+  <section id="page-critical" class="page"><h2>🛡️ Kritik Müdahale Sıralaması</h2><div id="criticalRanking" class="panel"></div></section>
+  <section id="page-market" class="page"><h2>💰 Piyasa Değeri</h2><p class="note">Gol 700K · Asist 600K · Match Up 100K · Kritik Müdahale 500K</p><div id="marketRanking" class="panel"></div></section>
+
+  <section id="page-admin" class="page"><h2>🔐 Admin Paneli</h2><div id="adminArea"></div></section>
+</main>
+</div>
+
+<script>
+const PRICE={goal:700000,assist:600000,match_up:100000,critical:500000};
+const STORE='blue_lock_league_v4';
+const DEMO={
+ teams:[
+  {id:'t1',name:'PXG'},{id:'t2',name:'Bastard München'},{id:'t3',name:'Ubers'},{id:'t4',name:'Manshine City'}
+ ],
+ players:[
+  {id:'p1',name:'Rin Itoshi',teamId:'t1',position:'ST',number:10,age:17,bio:'Saha görüşü, bitiricilik ve bire bir tehditiyle öne çıkan hücum oyuncusu.'},
+  {id:'p2',name:'Yoichi Isagi',teamId:'t2',position:'ST',number:11,age:17,bio:'Alan okuma ve pozisyon alma konusunda güçlü forvet.'},
+  {id:'p3',name:'Ryusei Shidou',teamId:'t1',position:'ST',number:9,age:18,bio:'Ceza alanı içinde agresif ve patlayıcı bitirici.'},
+  {id:'p4',name:'Oliver Aiku',teamId:'t3',position:'CB',number:2,age:19,bio:'Savunma okumaları ve kritik müdahaleleriyle öne çıkan stoper.'},
+  {id:'p5',name:'Reo Mikage',teamId:'t4',position:'CM',number:7,age:17,bio:'Çok yönlü orta saha.'},
+  {id:'p6',name:'Sae Itoshi',teamId:'t2',position:'AM',number:8,age:18,bio:'Yaratıcılığı ve pas kalitesi yüksek oyun kurucu.'}
+ ],
+ matches:[
+  {id:'m1',homeId:'t1',awayId:'t2',homeScore:3,awayScore:2,status:'Bitti',date:'2026-09-20T20:00:00'},
+  {id:'m2',homeId:'t3',awayId:'t4',homeScore:1,awayScore:1,status:'Bitti',date:'2026-09-22T20:00:00'}
+ ],
+ events:[
+  {id:'e1',matchId:'m1',playerId:'p1',type:'goal',minute:12,desc:''},
+  {id:'e2',matchId:'m1',playerId:'p6',type:'assist',minute:12,desc:''},
+  {id:'e3',matchId:'m1',playerId:'p3',type:'goal',minute:29,desc:''},
+  {id:'e4',matchId:'m1',playerId:'p2',type:'goal',minute:51,desc:''},
+  {id:'e5',matchId:'m1',playerId:'p1',type:'match_up',minute:66,desc:'1v1 kazandı'},
+  {id:'e6',matchId:'m1',playerId:'p4',type:'critical',minute:74,desc:'Golü önledi'},
+  {id:'e7',matchId:'m2',playerId:'p5',type:'assist',minute:40,desc:''},
+  {id:'e8',matchId:'m2',playerId:'p4',type:'critical',minute:81,desc:''}
+ ]
+};
+let db=loadDb(),isAdmin=false;
+
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function loadDb(){try{return JSON.parse(localStorage.getItem(STORE))||clone(DEMO)}catch(e){return clone(DEMO)}}
+function saveDb(){localStorage.setItem(STORE,JSON.stringify(db));renderAll();if(isAdmin)renderAdmin()}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function money(v){return new Intl.NumberFormat('tr-TR').format(v||0)+' ₺'}
+function id(prefix){return prefix+Date.now()+Math.random().toString(16).slice(2,6)}
+function team(i){return db.teams.find(x=>x.id===i)}
+function player(i){return db.players.find(x=>x.id===i)}
+function match(i){return db.matches.find(x=>x.id===i)}
+function initials(n){return n.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
+function eventLabel(t){return {goal:'⚽ GOL',assist:'🅰 ASİST',match_up:'⚔️ MATCH UP',critical:'🛡 KRİTİK'}[t]||t}
+function dateFmt(d){return d?new Date(d).toLocaleString('tr-TR',{dateStyle:'medium',timeStyle:'short'}):'-'}
+
+function pstats(p){
+ const es=db.events.filter(e=>e.playerId===p.id);
+ const goals=es.filter(e=>e.type==='goal').length,assists=es.filter(e=>e.type==='assist').length,matchups=es.filter(e=>e.type==='match_up').length,critical=es.filter(e=>e.type==='critical').length;
+ const market=goals*PRICE.goal+assists*PRICE.assist+matchups*PRICE.match_up+critical*PRICE.critical;
+ const rating=Math.min(99,50+goals*3+assists*2+matchups+critical*2);
+ return {...p,goals,assists,matchups,critical,market,rating};
+}
+function allPlayers(){return db.players.map(pstats)}
+
+const TITLES={dashboard:'Ana Sayfa',players:'Oyuncular',profile:'Oyuncu Profili',teams:'Takımlar',teamDetail:'Takım Detayı',league:'Lig',matches:'Maç Sonuçları',matchDetail:'Maç Detayı',goals:'Gol Krallığı',assists:'Asist Krallığı',matchups:'Match Up',critical:'Kritik Müdahale',market:'Piyasa Değeri',admin:'Admin Paneli'};
+function showPage(p){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ const el=document.getElementById('page-'+p);if(el)el.classList.add('active');
+ document.getElementById('pageTitle').textContent=TITLES[p]||p;
+ document.querySelectorAll('.navBtn').forEach(b=>b.classList.toggle('active',b.dataset.page===p||(p==='profile'&&b.dataset.page==='players')||(p==='teamDetail'&&b.dataset.page==='teams')||(p==='matchDetail'&&b.dataset.page==='matches')));
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(p==='admin')renderAdmin();
+}
+document.querySelectorAll('.navBtn').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+
+function renderDashboard(){
+ const ps=allPlayers(),totalGoals=ps.reduce((a,p)=>a+p.goals,0);
+ document.getElementById('dashboardCards').innerHTML=[
+  ['Takımlar',db.teams.length],['Oyuncular',ps.length],['Maçlar',db.matches.length],['Toplam Gol',totalGoals]
+ ].map(x=>`<div class="box"><h3>${x[0]}</h3><p>${x[1]}</p></div>`).join('');
+ const ms=[...db.matches].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+ document.getElementById('recentMatches').innerHTML=ms.map(m=>`<div class="rankRow" onclick="openMatch('${m.id}')"><div class="rankMain"><strong>${esc(team(m.homeId)?.name)} ${m.homeScore}-${m.awayScore} ${esc(team(m.awayId)?.name)}</strong><small>${dateFmt(m.date)}</small></div></div>`).join('')||'<p class="note">Maç yok.</p>';
+ rankMini('dashGoals','goals',5,false);rankMini('dashAssists','assists',5,false);rankMini('dashMarket','market',5,true);
+}
+function rankMini(idEl,key,limit,isMoney){
+ const arr=allPlayers().sort((a,b)=>b[key]-a[key]).slice(0,limit);
+ document.getElementById(idEl).innerHTML=arr.map((p,i)=>`<div class="rankRow" onclick="openProfile('${p.id}')"><div class="rankNum">${i+1}</div><div class="rankMain"><strong>${esc(p.name)}</strong><small>${esc(team(p.teamId)?.name||'Takımsız')}</small></div><div class="rankVal">${isMoney?money(p[key]):p[key]}</div></div>`).join('');
+}
+function renderPlayers(){
+ const sel=document.getElementById('playerTeamFilter'),old=sel.value;
+ sel.innerHTML='<option value="">Tüm Takımlar</option>'+db.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');sel.value=old;
+ const q=document.getElementById('playerSearch').value.toLowerCase(),tf=sel.value;
+ const ps=allPlayers().filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!tf||p.teamId===tf));
+ document.getElementById('playersList').innerHTML=ps.map(p=>`<div class="forumRow" onclick="openProfile('${p.id}')">
+   <div class="avatar">${initials(p.name)}</div><div><div class="name">${esc(p.name)}</div><div class="sub">#${p.number??'-'}</div></div>
+   <div class="mobileHide">${esc(p.position||'-')}</div><div class="mobileHide">${esc(team(p.teamId)?.name||'Takımsız')}</div>
+   <div class="value">${money(p.market)}</div><div class="mobileHide">${p.goals}</div><div class="mobileHide">${p.assists}</div><div class="hideTablet mobileHide">${p.matchups}</div>
+ </div>`).join('')||'<div style="padding:25px;color:#718096">Oyuncu bulunamadı.</div>';
+}
+document.getElementById('playerSearch').oninput=renderPlayers;document.getElementById('playerTeamFilter').onchange=renderPlayers;
+
+function openProfile(pid){
+ const p=pstats(player(pid));if(!p)return;
+ document.getElementById('profileArea').innerHTML=`<div class="fmCard"><div class="fmHeader">
+   <div class="fmPhoto">${initials(p.name)}</div><div class="fmInfo"><h2>${esc(p.name)}</h2><h3>${esc(p.position||'Oyuncu')} • ${esc(team(p.teamId)?.name||'Takımsız')}</h3><div class="fmMeta">Forma #${p.number??'-'} ${p.age?'• '+p.age+' yaş':''}</div>
+   <div class="performance"><span>Rating <b>${p.rating}</b></span><span>⚽ ${p.goals}</span><span>🅰 ${p.assists}</span><span>⚔️ ${p.matchups}</span><span>🛡 ${p.critical}</span></div></div>
+   <div class="marketBig"><small>Piyasa Değeri</small><strong>${money(p.market)}</strong></div></div>
+   <hr style="border:0;border-top:1px solid #273449;margin:22px 0"><p class="note">${esc(p.bio||'Biyografi eklenmedi.')}</p>
+   <div class="cards"><div class="box"><h3>Gol Değeri</h3><p>${money(p.goals*PRICE.goal)}</p></div><div class="box"><h3>Asist Değeri</h3><p>${money(p.assists*PRICE.assist)}</p></div><div class="box"><h3>Match Up Değeri</h3><p>${money(p.matchups*PRICE.match_up)}</p></div><div class="box"><h3>Kritik Değeri</h3><p>${money(p.critical*PRICE.critical)}</p></div></div>
+ </div>`;
+ showPage('profile');
+}
+
+function renderTeams(){
+ document.getElementById('teamsList').innerHTML=db.teams.map(t=>{const ps=allPlayers().filter(p=>p.teamId===t.id);return `<div class="teamCard" onclick="openTeam('${t.id}')"><div class="teamLogo">${esc(t.name.slice(0,2).toUpperCase())}</div><h3>${esc(t.name)}</h3><div class="teamMini"><span>${ps.length} oyuncu</span><span>${ps.reduce((a,p)=>a+p.goals,0)} gol</span></div></div>`}).join('');
+}
+function openTeam(tid){const t=team(tid),ps=allPlayers().filter(p=>p.teamId===tid);document.getElementById('teamDetail').innerHTML=`<div class="panel"><h2>${esc(t.name)}</h2><p class="note">${ps.length} kayıtlı oyuncu</p></div><div class="forumList">${ps.map(p=>`<div class="forumRow" style="grid-template-columns:58px 2fr 1fr 1fr" onclick="openProfile('${p.id}')"><div class="avatar">${initials(p.name)}</div><div><b>${esc(p.name)}</b><div class="sub">${esc(p.position||'-')}</div></div><div>${p.goals} Gol</div><div class="value">${money(p.market)}</div></div>`).join('')||'<div style="padding:20px">Oyuncu yok.</div>'}</div>`;showPage('teamDetail')}
+
+function standings(){
+ const map={};db.teams.forEach(t=>map[t.id]={team:t,O:0,G:0,B:0,M:0,AG:0,YG:0,P:0});
+ db.matches.filter(m=>m.status!=='Yakında').forEach(m=>{const h=map[m.homeId],a=map[m.awayId];if(!h||!a)return;h.O++;a.O++;h.AG+=m.homeScore;h.YG+=m.awayScore;a.AG+=m.awayScore;a.YG+=m.homeScore;if(m.homeScore>m.awayScore){h.G++;h.P+=3;a.M++}else if(m.homeScore<m.awayScore){a.G++;a.P+=3;h.M++}else{h.B++;a.B++;h.P++;a.P++}});
+ return Object.values(map).sort((a,b)=>b.P-a.P||(b.AG-b.YG)-(a.AG-a.YG)||b.AG-a.AG);
+}
+function renderLeague(){document.getElementById('leagueBody').innerHTML=standings().map((x,i)=>`<tr><td>${i+1}</td><td><b>${esc(x.team.name)}</b></td><td>${x.O}</td><td>${x.G}</td><td>${x.B}</td><td>${x.M}</td><td>${x.AG}</td><td>${x.YG}</td><td>${x.AG-x.YG}</td><td><b>${x.P}</b></td></tr>`).join('')}
+
+function renderMatches(){
+ const ms=[...db.matches].sort((a,b)=>new Date(b.date)-new Date(a.date));
+ document.getElementById('matchesList').innerHTML=ms.map(m=>{const es=db.events.filter(e=>e.matchId===m.id);return `<div class="matchCard" onclick="openMatch('${m.id}')"><div class="matchMeta">${dateFmt(m.date)} • ${esc(m.status)}</div><div class="matchScore"><div class="home">${esc(team(m.homeId)?.name)}</div><div class="score">${m.homeScore} — ${m.awayScore}</div><div class="away">${esc(team(m.awayId)?.name)}</div></div>${es.length?`<div class="eventTags">${es.slice(0,7).map(e=>`<span class="tag">${eventLabel(e.type)} ${esc(player(e.playerId)?.name||'')}</span>`).join('')}</div>`:''}</div>`}).join('')||'<p class="note">Maç yok.</p>';
+}
+function openMatch(mid){
+ const m=match(mid),es=db.events.filter(e=>e.matchId===mid).sort((a,b)=>(a.minute??999)-(b.minute??999));
+ document.getElementById('matchDetail').innerHTML=`<div class="panel"><div class="matchMeta">${dateFmt(m.date)} • ${esc(m.status)}</div><div class="matchScore"><div class="home"><h2>${esc(team(m.homeId)?.name)}</h2></div><div class="score" style="font-size:34px">${m.homeScore} — ${m.awayScore}</div><div class="away"><h2>${esc(team(m.awayId)?.name)}</h2></div></div></div><div class="panel"><h3>Maç Olayları</h3>${es.map(e=>`<div class="adminRow"><div><b>${e.minute??'-'}' ${eventLabel(e.type)}</b><br><small>${esc(player(e.playerId)?.name||'')} ${e.desc?'• '+esc(e.desc):''}</small></div></div>`).join('')||'<p class="note">Olay kaydı yok.</p>'}</div>`;showPage('matchDetail');
+}
+function renderRankings(){
+ rankFull('goalsRanking','goals',false);rankFull('assistsRanking','assists',false);rankFull('matchupsRanking','matchups',false);rankFull('criticalRanking','critical',false);rankFull('marketRanking','market',true);
+}
+function rankFull(el,key,isMoney){const arr=allPlayers().sort((a,b)=>b[key]-a[key]);document.getElementById(el).innerHTML=arr.map((p,i)=>`<div class="rankRow" onclick="openProfile('${p.id}')"><div class="rankNum">${i+1}</div><div class="avatar" style="width:35px;height:35px;font-size:11px">${initials(p.name)}</div><div class="rankMain"><strong>${esc(p.name)}</strong><small>${esc(team(p.teamId)?.name||'Takımsız')}</small></div><div class="rankVal">${isMoney?money(p[key]):p[key]}</div></div>`).join('')}
+
+function renderAdmin(){
+ const a=document.getElementById('adminArea');
+ if(!isAdmin){a.innerHTML=`<div class="panel adminLogin"><div class="notice">Bu sürüm GitHub Pages üzerinde tasarım ve sistemi denemek için localStorage kullanır. Gerçek güvenli admin hesabını Supabase bağlayınca açacağız.</div><label>Admin Şifresi</label><input id="adminPass" type="password" placeholder="Demo: admin123"><button class="btn" onclick="adminLogin()">Giriş Yap</button><div id="adminMsg" class="note"></div></div>`;return}
+ a.innerHTML=`<div class="cards"><div class="box"><h3>Takım</h3><p>${db.teams.length}</p></div><div class="box"><h3>Oyuncu</h3><p>${db.players.length}</p></div><div class="box"><h3>Maç</h3><p>${db.matches.length}</p></div><div class="box"><h3>Olay</h3><p>${db.events.length}</p></div></div>
+ <div class="rankGrid">
+ <div class="panel"><h3>➕ Takım Ekle</h3><label>Takım Adı</label><input id="aTeamName"><button class="btn" onclick="addTeam()">Kaydet</button></div>
+ <div class="panel"><h3>➕ Oyuncu Ekle</h3><label>İsim</label><input id="aPlayerName"><div class="formGrid"><div><label>Takım</label><select id="aPlayerTeam">${teamOptions()}</select></div><div><label>Mevki</label><input id="aPlayerPos"></div><div><label>Forma</label><input id="aPlayerNo" type="number"></div><div><label>Yaş</label><input id="aPlayerAge" type="number"></div></div><label>Biyografi</label><textarea id="aPlayerBio"></textarea><button class="btn" onclick="addPlayer()">Oyuncuyu Kaydet</button></div>
+ <div class="panel"><h3>📅 Maç Oluştur</h3><div class="formGrid"><div><label>Ev Sahibi</label><select id="aHome">${teamOptions()}</select></div><div><label>Deplasman</label><select id="aAway">${teamOptions()}</select></div><div><label>Ev Skor</label><input id="aHomeScore" type="number" value="0"></div><div><label>Dep Skor</label><input id="aAwayScore" type="number" value="0"></div></div><label>Durum</label><select id="aStatus"><option>Bitti</option><option>Canlı</option><option>Yakında</option></select><button class="btn" onclick="addMatch()">Maçı Kaydet</button></div>
+ <div class="panel"><h3>⚡ Maç Olayı Ekle</h3><label>Maç</label><select id="aEventMatch">${matchOptions()}</select><label>Oyuncu</label><select id="aEventPlayer">${playerOptions()}</select><div class="formGrid"><div><label>Olay</label><select id="aEventType"><option value="goal">⚽ Gol</option><option value="assist">🅰 Asist</option><option value="match_up">⚔️ Match Up</option><option value="critical">🛡 Kritik Müdahale</option></select></div><div><label>Dakika</label><input id="aEventMinute" type="number"></div></div><label>Açıklama</label><input id="aEventDesc"><button class="btn" onclick="addEvent()">Olayı Kaydet</button></div>
+ </div>
+ <div class="panel"><h3>Son Olaylar</h3><div class="adminRows">${[...db.events].reverse().slice(0,20).map(e=>`<div class="adminRow"><div><b>${eventLabel(e.type)} • ${esc(player(e.playerId)?.name||'')}</b><br><small>${e.minute??'-'}' • ${esc(matchName(e.matchId))}</small></div><button class="btn danger small" onclick="deleteEvent('${e.id}')">Sil</button></div>`).join('')||'<p class="note">Olay yok.</p>'}</div></div>
+ <div class="panel"><button class="btn ghost" onclick="resetDemo()">Demo Verisini Sıfırla</button><button class="btn danger" onclick="adminLogout()">Çıkış</button></div>`;
+}
+function teamOptions(){return '<option value="">Takım seç</option>'+db.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+function playerOptions(){return '<option value="">Oyuncu seç</option>'+db.players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+function matchName(mid){const m=match(mid);return m?`${team(m.homeId)?.name} ${m.homeScore}-${m.awayScore} ${team(m.awayId)?.name}`:'Maç'}
+function matchOptions(){return '<option value="">Maç seç</option>'+db.matches.map(m=>`<option value="${m.id}">${esc(matchName(m.id))}</option>`).join('')}
+function adminLogin(){if(document.getElementById('adminPass').value==='admin123'){isAdmin=true;document.getElementById('modeText').textContent='Admin';document.getElementById('modeBadge').textContent='Admin';document.getElementById('modeBadge').className='badge admin';renderAdmin()}else document.getElementById('adminMsg').textContent='Şifre yanlış. Demo şifre: admin123'}
+function adminLogout(){isAdmin=false;document.getElementById('modeText').textContent='Ziyaretçi';document.getElementById('modeBadge').textContent='Ziyaretçi';document.getElementById('modeBadge').className='badge';renderAdmin()}
+function addTeam(){const n=document.getElementById('aTeamName').value.trim();if(!n)return alert('Takım adı gir.');if(db.teams.some(t=>t.name.toLowerCase()===n.toLowerCase()))return alert('Bu takım zaten var.');db.teams.push({id:id('t'),name:n});saveDb()}
+function addPlayer(){const n=document.getElementById('aPlayerName').value.trim();if(!n)return alert('Oyuncu adı gir.');db.players.push({id:id('p'),name:n,teamId:document.getElementById('aPlayerTeam').value||null,position:document.getElementById('aPlayerPos').value.trim(),number:Number(document.getElementById('aPlayerNo').value)||null,age:Number(document.getElementById('aPlayerAge').value)||null,bio:document.getElementById('aPlayerBio').value.trim()});saveDb()}
+function addMatch(){const h=document.getElementById('aHome').value,a=document.getElementById('aAway').value;if(!h||!a||h===a)return alert('İki farklı takım seç.');db.matches.push({id:id('m'),homeId:h,awayId:a,homeScore:Number(document.getElementById('aHomeScore').value)||0,awayScore:Number(document.getElementById('aAwayScore').value)||0,status:document.getElementById('aStatus').value,date:new Date().toISOString()});saveDb()}
+function addEvent(){const m=document.getElementById('aEventMatch').value,p=document.getElementById('aEventPlayer').value;if(!m||!p)return alert('Maç ve oyuncu seç.');db.events.push({id:id('e'),matchId:m,playerId:p,type:document.getElementById('aEventType').value,minute:Number(document.getElementById('aEventMinute').value)||null,desc:document.getElementById('aEventDesc').value.trim()});saveDb()}
+function deleteEvent(eid){if(confirm('Bu olayı silmek istiyor musun?')){db.events=db.events.filter(e=>e.id!==eid);saveDb()}}
+function resetDemo(){if(confirm('Tüm yerel veriyi demo haline döndürmek istiyor musun?')){db=clone(DEMO);saveDb()}}
+
+function renderAll(){renderDashboard();renderPlayers();renderTeams();renderLeague();renderMatches();renderRankings()}
+renderAll();
+</script>
+</body>
+</html>
